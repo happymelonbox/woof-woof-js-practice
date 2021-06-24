@@ -4,7 +4,7 @@ const URL = 'http://localhost:3000/pups'
 const dogBar = document.getElementById('dog-bar')
 const dogInfoDiv = document.getElementById('dog-info')
 
-let eachDog, eachDogName, dogBarInnerSpan, dogInfoImg, dogInfoTitle, dogInfoGOrB, dogInfo, goodBoy, dogId
+let eachDog, dogBarInnerSpan, dogInfoImg, dogInfoTitle, dogInfoGOrB, dogInfo, goodBoy, dogId
 let isClicked = false
 
 fetch(URL)
@@ -14,60 +14,66 @@ fetch(URL)
 function addToDogBar(obj){
     eachDog = Object.values(obj)
     for(let i=0;i<eachDog.length;i++){
-        eachDogName = eachDog[i].name
+        eachDogI = eachDog[i]
         dogBarInnerSpan = dogBar.appendChild(document.createElement('span'))
-        dogBarInnerSpan.innerHTML = eachDogName
+        dogBarInnerSpan.innerHTML = eachDogI.name
         dogBarInnerSpan.style.cursor = 'pointer'
-        dogBarInnerSpan.addEventListener('click', function(){openDogInfo(eachDog[i].name, eachDog[i].image, eachDog[i].isGoodDog), eachDog[i].id})
-        console.log(eachDogName[i].id)
+        dogBarInnerSpan.addEventListener('click', function(){openDogInfo(eachDog[i])})
     }
 }
 
-function openDogInfo(name, image, isGood, id){
+function openDogInfo(arg){
     if(isClicked){
         dogInfo = document.querySelectorAll('.dogInfo')
         for(i=0;i<dogInfo.length;i++){
             dogInfo[i].remove()
         }
     }
+    isGood = arg.isGoodDog
     isClicked = true
-    dogId = id
+    dogId = arg.id
     console.log(dogId)
     dogInfoImg = dogInfoDiv.appendChild(document.createElement('img'))
-    dogInfoImg.setAttribute('src', image)
+    dogInfoImg.setAttribute('src', arg.image)
     dogInfoImg.setAttribute('class', 'dogInfo')
     dogInfoTitle = dogInfoDiv.appendChild(document.createElement('h2'))
     dogInfoTitle.setAttribute('class', 'dogInfo')
-    dogInfoTitle.innerHTML = name
+    dogInfoTitle.innerHTML = arg.name
     dogInfoGOrB = dogInfoDiv.appendChild(document.createElement('button'))
     dogInfoGOrB.setAttribute('class', 'dogInfo')
     if(isGood){
         dogInfoGOrB.innerHTML = 'Good doggo'
-        goodBoy = true
+        isGood = true
     } else {
         dogInfoGOrB.innerHTML = 'Bad doggo'
-        goodBoy = false
+        isGood = false
     }
-    dogInfoGOrB.addEventListener('click', function(){toggleGB(dogId)})
+    dogInfoGOrB.addEventListener('click', function(){toggleGB(arg)})
 }
 
-function toggleGB(idNumber){
-    if (goodBoy){
+function toggleGB(dog){
+    if (isGood){
         dogInfoGOrB.innerHTML = 'Bad doggo'
-        goodBoy = false
-        
-    } else if (!goodBoy){
+        isGood = false
+    } else if(!isGood){
         dogInfoGOrB.innerHTML = 'Good doggo'
-        goodBoy = true
+        isGood = true
     }
-    fetch(URL+`/:${idNumber}`, {
+    fetch(URL+`/${dog.id}`, {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         method: 'PATCH',
-        body: JSON.stringify( {isGood : goodBoy } ) 
+        body: JSON.stringify( {
+            'id': dog.id,
+            'name': dog.name,
+            'isGoodDog' : isGood,
+            'image': dog.image
+        })
     })
+    .then(resp=>resp.json())
+    .then(data=>console.log(data))
 }
 
 })
