@@ -3,23 +3,66 @@ document.addEventListener('DOMContentLoaded', function(){
 const URL = 'http://localhost:3000/pups'
 const dogBar = document.getElementById('dog-bar')
 const dogInfoDiv = document.getElementById('dog-info')
+const goodDogFilter = document.getElementById('good-dog-filter')
 
-let eachDog, dogBarInnerSpan, dogInfoImg, dogInfoTitle, dogInfoGOrB, dogInfo, goodBoy, dogId
+let eachDog, dogBarInnerSpan, dogInfoImg, dogInfoTitle, dogInfoGOrB, dogInfo, goodDogs, dogId, allDogs
 let isClicked = false
+
+goodDogFilter.addEventListener('click', function(){dogFilterToggle()})
 
 fetch(URL)
 .then(resp=>resp.json())
 .then((data)=>{addToDogBar(data)})
+
+function dogFilterToggle(){
+    if(!isClicked){
+        isClicked = true
+        goodDogFilter.innerHTML = 'Filter good dogs: ON'
+        removeAllDogs()
+        fetch(URL)
+        .then(resp=>resp.json())
+        .then((data)=>{addGoodDogToDogBar(data)})
+    } else {
+        isClicked = false
+        goodDogFilter.innerHTML = 'Filter good dogs: OFF'
+        removeAllDogs()
+        fetch(URL)
+        .then(resp=>resp.json())
+        .then((data)=>{addToDogBar(data)})
+    }
+}
 
 function addToDogBar(obj){
     eachDog = Object.values(obj)
     for(let i=0;i<eachDog.length;i++){
         eachDogI = eachDog[i]
         dogBarInnerSpan = dogBar.appendChild(document.createElement('span'))
+        dogBarInnerSpan.setAttribute('class', 'allDogs')
         dogBarInnerSpan.innerHTML = eachDogI.name
         dogBarInnerSpan.style.cursor = 'pointer'
         dogBarInnerSpan.addEventListener('click', function(){openDogInfo(eachDog[i])})
     }
+}
+
+function addGoodDogToDogBar(obj){
+    eachDog = Object.values(obj)
+    for(let i=0;i<eachDog.length;i++){
+        eachDogI = eachDog[i]
+        if(eachDogI.isGoodDog){
+            dogBarInnerSpan = dogBar.appendChild(document.createElement('span'))
+            dogBarInnerSpan.setAttribute('class', 'allDogs')
+            dogBarInnerSpan.innerHTML = eachDogI.name
+            dogBarInnerSpan.style.cursor = 'pointer'
+            dogBarInnerSpan.addEventListener('click', function(){openDogInfo(eachDog[i])})
+        }
+    }
+}
+
+function removeAllDogs(){
+    allDogs = document.querySelectorAll('span.allDogs')
+        for (k=0; k<allDogs.length; k++){
+            allDogs[k].remove()
+        }
 }
 
 function openDogInfo(arg){
